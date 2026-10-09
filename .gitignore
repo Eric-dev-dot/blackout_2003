@@ -1,0 +1,9 @@
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.tmp
+
+# 不入库的大件与工作区私有内容（仓库根=blackout_slides 时大多不适用，保留兜底）
+*.mp4
+*.zip
+node_modules/

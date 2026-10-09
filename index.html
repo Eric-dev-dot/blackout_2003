@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2003 年美加大停电 · 六阶段机理演示</title>
+  <link rel="stylesheet" href="css/slides.css?v=7">
+</head>
+<body>
+  <div id="stage-scaler">
+    <div id="slide-vp">
+
+      <!-- 开始演示覆盖层 -->
+      <div id="gate">
+        <div class="gate-kicker">2003-08-14 · BLACKOUT</div>
+        <h1>一条线路退出，为什么会扩大成跨区域停电？</h1>
+        <button type="button">开始演示</button>
+        <div class="gate-hint">←→ 翻页 · 空格 播放/暂停 · Esc 停止</div>
+      </div>
+
+      <!-- 幻灯片页面（JS 构建） -->
+
+      <!-- 线路悬停浮层 -->
+      <div id="line-tip"></div>
+
+      <!-- 进度条与控制条 -->
+      <div id="progress-track"><div id="progress-fill"></div></div>
+      <div id="control-bar">
+        <button id="ctl-prev" type="button">←</button>
+        <button id="ctl-play" type="button">▶ 播放</button>
+        <button id="ctl-next" type="button">→</button>
+      </div>
+
+      <div id="load-error" role="alert" hidden></div>
+    </div>
+  </div>
+  <script type="module" src="js/main.js?v=9"></script>
+</body>
+</html>

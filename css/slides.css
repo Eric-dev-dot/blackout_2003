@@ -1,0 +1,641 @@
+/* ============================================================
+   2003 美加大停电 · 幻灯片（调度中心暗色）
+   视觉规范：blackout_research/slides_visual_spec.md
+   ============================================================ */
+
+/* ---------- 1. Tokens ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --bg: #0d1522;
+  --panel: #131e2e;
+  --panel-raise: #16233a;
+  --edge: rgba(255, 255, 255, .08);
+
+  --ink: #e8eef4;
+  --ink-soft: #a8b8c8;
+  --muted: #7d8fa3;
+
+  --state-green: #34c98a;
+  --state-yellow: #e8b13f;
+  --state-red: #ef6b6b;
+  --state-gray: #8a97a8;
+  --state-blue: #6ba3d5;
+
+  --green-soft: rgba(52, 201, 138, .12);
+  --yellow-soft: rgba(232, 177, 63, .12);
+  --red-soft: rgba(239, 107, 107, .12);
+  --gray-soft: rgba(138, 151, 168, .12);
+  --blue-soft: rgba(107, 163, 213, .12);
+
+  --font: "Segoe UI", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+  --mono: Consolas, "Cascadia Mono", "JetBrains Mono", monospace;
+
+  --radius: 8px;
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --pad: 48px;
+  --header-h: 72px;
+  --footer-h: 40px;
+}
+
+/* ---------- 2. Stage shell（画布缩放） ---------- */
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: #0a0f18;
+  font-family: var(--font);
+  color: var(--ink);
+  overflow: hidden;
+}
+#stage-scaler {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+#slide-vp {
+  width: var(--slide-w);
+  height: var(--slide-h);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px at 50% -10%, rgba(20, 32, 50, .55), transparent 70%),
+    var(--bg);
+  border-radius: 6px;
+  box-shadow: 0 0 80px rgba(0, 0, 0, .5);
+  transform-origin: center center;
+}
+
+/* ---------- 3. 开始演示覆盖层 ---------- */
+#gate {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: rgba(10, 15, 24, .92);
+  backdrop-filter: blur(3px);
+}
+#gate.hidden { display: none; }
+#gate .gate-kicker {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: .3em;
+  color: var(--state-blue);
+}
+#gate h1 { margin: 0; font-size: 30px; font-weight: 600; color: var(--ink); }
+#gate button {
+  font-family: var(--font);
+  font-size: 19px;
+  padding: 14px 46px;
+  border-radius: var(--radius);
+  border: 1px solid var(--state-blue);
+  background: var(--blue-soft);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .2s, box-shadow .2s;
+}
+#gate button:hover { background: rgba(107, 163, 213, .22); box-shadow: 0 0 16px rgba(107, 163, 213, .35); }
+#gate .gate-hint { font-family: var(--mono); font-size: 14px; color: var(--muted); }
+
+/* ---------- 4. 幻灯片基座 ---------- */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 0 var(--pad) 0;
+}
+.slide.active { display: flex; }
+
+/* 通用推移切换 */
+.slide.slide-in-right { display: flex; animation: slideInRight .3s ease-out both; }
+.slide.slide-in-left { display: flex; animation: slideInLeft .3s ease-out both; }
+@keyframes slideInRight { from { transform: translateX(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes slideInLeft { from { transform: translateX(-60px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* 页眉 / 页脚 */
+.slide-header {
+  height: var(--header-h);
+  flex: 0 0 var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid var(--edge);
+}
+.slide-header .kicker {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .25em;
+  color: var(--state-blue);
+  white-space: nowrap;
+}
+.slide-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slide-header .spacer { flex: 1; }
+.page-no { font-family: var(--mono); font-size: 16px; color: var(--muted); }
+.slide-body { flex: 1; min-height: 0; padding-top: 20px; }
+.slide-footer {
+  height: var(--footer-h);
+  flex: 0 0 var(--footer-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--edge);
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--muted);
+}
+.slide.l1 .slide-header, .slide.l1 .slide-footer { display: none; }
+
+/* 阶段进度胶囊（页眉内） */
+.stage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--ink-soft);
+  padding: 6px 14px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+.stage-pill .dots { letter-spacing: 4px; }
+.stage-pill .dots i { font-style: normal; color: var(--muted); }
+.stage-pill .dots i.on { color: var(--state-yellow); }
+
+/* 卡片通用 */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+.card .kicker {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .22em;
+  color: var(--state-blue);
+}
+.card h3 { margin: 4px 0 10px; font-size: 19px; font-weight: 600; color: var(--ink); }
+
+/* 入场 stagger（首次进入） */
+.slide.active .rise { animation: rise .3s ease-out both; }
+.slide.active .rise:nth-child(1) { animation-delay: .05s; }
+.slide.active .rise:nth-child(2) { animation-delay: .13s; }
+.slide.active .rise:nth-child(3) { animation-delay: .21s; }
+.slide.active .rise:nth-child(4) { animation-delay: .29s; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 5. L1 封面 ---------- */
+.slide.l1 .slide-body { display: flex; align-items: center; justify-content: center; position: relative; }
+.cover-motif { position: absolute; inset: 0; opacity: .12; pointer-events: none; overflow: hidden; }
+.cover-block { position: relative; text-align: center; max-width: 900px; }
+.cover-block .kicker {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: .35em;
+  color: var(--state-blue);
+}
+.cover-block h1 { margin: 12px 0; font-size: 44px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+.cover-block .subtitle { font-family: var(--mono); font-size: 16px; color: var(--ink-soft); letter-spacing: .08em; }
+.cover-block .meta { margin-top: 14px; font-size: 14px; color: var(--muted); }
+.cover-block .who {
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--ink-soft);
+  padding: 8px 18px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  display: inline-block;
+  background: var(--panel);
+}
+
+/* ---------- 6. L2 开场 ---------- */
+.l2-grid { display: grid; grid-template-columns: 45fr 55fr; grid-template-rows: minmax(0, 1fr); gap: 24px; height: 100%; }
+.l2-grid > * { min-height: 0; }
+.l2-copy { display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+.l2-copy .lead { font-size: 18px; line-height: 1.75; color: var(--ink); }
+.l2-copy .sub { font-size: 15px; line-height: 1.75; color: var(--ink-soft); }
+.l2-copy .src { font-size: 14px; color: var(--muted); }
+.region-card { display: flex; flex-direction: column; height: 100%; }
+.region-map {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.region-map svg { width: 100%; height: 100%; }
+
+/* 真实边界地图（浅色粉彩，参考底图风格） */
+.rm-water-bg { fill: #a9d8ec; }
+.rm-base { fill: #c9e3c8; stroke: #ffffff; stroke-width: .7; }
+.rm-lake { fill: #82c7e4; stroke: #5fafd2; stroke-width: .6; }
+.rm-hit {
+  fill: #c9e3c8; stroke: #e0a878; stroke-width: .8;
+  animation: turnHit .45s ease-out forwards;
+}
+.rm-hit.ca { stroke: #c89a6a; stroke-width: 1.3; }
+@keyframes turnHit { to { fill: #f6cba2; } }
+.rm-label {
+  fill: #4f5d53; font-size: 13px; font-weight: 600;
+  text-anchor: middle; font-family: var(--font);
+  paint-order: stroke; stroke: #fdf3e4; stroke-width: 2.5px; stroke-linejoin: round;
+  pointer-events: none;
+}
+.rm-label.out { text-anchor: start; font-size: 12px; font-weight: 500; stroke: none; }
+.rm-leader { stroke: #6f7d73; stroke-width: .8; }
+.rm-leader-dot { fill: #6f7d73; }
+.rm-lake-name { fill: #3f7fa0; font-size: 10.5px; font-style: italic; text-anchor: middle; font-family: var(--font); pointer-events: none; }
+
+.region-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; font-family: var(--mono); }
+.region-note .lg {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  vertical-align: -1px; margin: 0 4px 0 8px;
+}
+.region-note .lg-hit { background: #f6cba2; border: 1px solid #e0a878; margin-left: 0; }
+.region-note .lg-nb { background: #c9e3c8; border: 1px solid #9dbb9c; }
+.region-note .lg-water { background: #82c7e4; border: 1px solid #5fafd2; }
+
+/* ---------- 7. L3 背景横带 ---------- */
+.l3-stack { display: flex; flex-direction: column; gap: 16px; height: 100%; }
+.layer-card { flex: 1; display: flex; gap: 22px; align-items: center; position: relative; }
+.layer-card .tag {
+  flex: 0 0 92px;
+  align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 600;
+  color: var(--state-blue);
+  background: var(--blue-soft);
+  border-right: 1px solid var(--edge);
+  margin: -20px 0 -20px -22px;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.layer-card .claim { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.layer-card .detail { font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+.layer-card .src { position: absolute; right: 14px; bottom: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.bars { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.bar-row .bar-label { flex: 0 0 170px; color: var(--ink-soft); text-align: right; }
+.bar-track { flex: 1; max-width: 320px; height: 14px; background: var(--gray-soft); border-radius: 4px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 4px; transform-origin: left; animation: barGrow .7s ease-out both; }
+.bar-fill.tone-yellow { background: var(--state-yellow); box-shadow: 0 0 10px rgba(232, 177, 63, .35); }
+.bar-fill.tone-gray { background: var(--state-gray); }
+.bar-row .bar-value { font-family: var(--mono); color: var(--ink); }
+@keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.foreshadows { display: flex; gap: 10px; margin-top: 10px; }
+.foreshadow {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--state-yellow);
+  background: var(--yellow-soft);
+  border: 1px dashed rgba(232, 177, 63, .5);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+
+/* ---------- 8. L4 阶段页 ---------- */
+.l4-grid { display: grid; grid-template-columns: 680px 1fr; grid-template-rows: minmax(0, 1fr); gap: 20px; height: 100%; }
+.l4-grid > * { min-height: 0; }
+.diagram-card { display: flex; flex-direction: column; height: 100%; padding: 14px 16px 12px; }
+.diagram-card .card-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.fact-pill {
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+  border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px;
+}
+.diagram-slot { flex: 1; min-height: 0; display: flex; }
+.diagram-slot svg { width: 100%; height: 100%; }
+.change-bar {
+  flex: 0 0 36px;
+  margin-top: 8px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: var(--panel-raise);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--state-yellow);
+  border-radius: 6px;
+  padding: 0 12px;
+}
+.change-bar.calm { border-left-color: var(--state-green); }
+.change-bar.alarm { border-left-color: var(--state-red); }
+.l4-side { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.gauge-row { display: flex; gap: 10px; }
+.gauge-chip {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--ink-soft);
+  background: var(--panel); border: 1px solid var(--edge); border-radius: var(--radius);
+  padding: 8px 12px;
+}
+.gauge-chip b { color: var(--ink); font-weight: 600; }
+.gauge-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+.gauge-dot.dot-good { background: var(--state-green); box-shadow: 0 0 8px rgba(52, 201, 138, .5); }
+.gauge-dot.dot-warn { background: var(--state-yellow); box-shadow: 0 0 8px rgba(232, 177, 63, .5); }
+.gauge-dot.dot-alert { background: var(--state-red); box-shadow: 0 0 8px rgba(239, 107, 107, .5); }
+.mech-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.mech-card .screen-lead { font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin: 2px 0 8px; }
+.mech-list { display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.mech-item { border-left: 3px solid var(--state-blue); padding: 2px 0 2px 12px; }
+.mech-chain { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 3px; }
+.mech-fault { color: var(--state-yellow); }
+.mech-term { color: var(--state-blue); font-weight: 600; }
+.mech-chain i { color: var(--muted); font-style: normal; }
+.mech-text { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+.l4-side.refresh .fade-swap { animation: fadeSwap .2s ease-out both; }
+@keyframes fadeSwap { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- 9. L5 大数字 ---------- */
+.l5-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%; align-content: center; }
+.metric-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; position: relative; }
+.metric-card .value { font-family: var(--mono); font-size: 48px; font-weight: 700; color: var(--ink); }
+.metric-card .value .approx { color: var(--state-yellow); margin-right: 8px; }
+.metric-card .label { font-size: 19px; color: var(--ink-soft); }
+.qualifier {
+  position: absolute; top: 14px; right: 14px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--muted); border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px;
+}
+.metric-note { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--muted); }
+
+/* ---------- 10. L6 两条过程（双泳道动态流程图） ---------- */
+.flow-card { height: 100%; display: flex; padding: 10px 14px; }
+.flow-card svg { width: 100%; height: 100%; }
+
+.fs-lane-title { font-size: 14px; font-weight: 600; fill: var(--ink-soft); font-family: var(--font); }
+.fs-lane-title.t-yellow { fill: var(--state-yellow); }
+.fs-lane-title.t-gray { fill: var(--state-gray); }
+
+.fs-node { opacity: 0; animation: fsIn .35s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes fsIn { from { opacity: 0; } to { opacity: 1; } }
+.fs-ball { fill: var(--panel-raise); stroke-width: 2; }
+.tone-yellow .fs-ball { stroke: var(--state-yellow); }
+.tone-red .fs-ball { stroke: var(--state-red); }
+.tone-gray .fs-ball { stroke: var(--state-gray); }
+.fs-ic { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ic-yellow { stroke: var(--state-yellow); }
+.ic-red { stroke: var(--state-red); }
+.ic-gray { stroke: var(--state-gray); }
+.ic-end { stroke: #ffd9d9; }
+.fs-word { font-size: 15px; font-weight: 600; fill: var(--ink); text-anchor: middle; font-family: var(--font); }
+.fs-word.w-end { fill: var(--state-red); font-size: 16px; }
+.fs-note { font-size: 10.5px; fill: var(--muted); text-anchor: middle; font-family: var(--font); }
+
+.fs-link { fill: none; stroke-width: 2; opacity: 0; animation: fsLink .3s ease-out forwards; }
+.fs-link.lk-yellow { stroke: var(--state-yellow); }
+.fs-link.lk-red { stroke: var(--state-red); }
+.fs-link.lk-gray { stroke: var(--state-gray); }
+@keyframes fsLink { from { opacity: 0; } to { opacity: .9; } }
+
+.fs-cross { opacity: 0; animation: fsLink .35s ease-out forwards; }
+.fs-xlink { stroke: var(--state-red); stroke-width: 1.6; stroke-dasharray: 6 5; fill: none; }
+.fs-xlabel { font-size: 12px; fill: var(--state-red); text-anchor: middle; font-family: var(--font); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+
+.fs-end { opacity: 0; animation: fsLink .5s ease-out forwards; }
+.fs-end-ball { fill: var(--red-soft); stroke: var(--state-red); stroke-width: 2.5; filter: drop-shadow(0 0 14px rgba(239, 107, 107, .5)); }
+
+.fs-time-axis { stroke: var(--muted); stroke-width: 1.2; opacity: .6; }
+.fs-time-dot { fill: var(--state-blue); }
+.fs-time-word { font-size: 11.5px; fill: var(--muted); text-anchor: middle; font-family: var(--mono); }
+
+/* ---------- 11. L7 机理 2×2 ---------- */
+.l7-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1.15fr auto; gap: 14px; height: 100%; }
+.scale-card { padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; }
+.scale-card h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 10px; }
+.scope-chip {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 400;
+  color: var(--state-blue); background: var(--blue-soft);
+  border-radius: 999px; padding: 2px 9px;
+}
+.scale-card p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
+.scale-card .in-event { color: var(--ink); }
+.loop-card { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+.loop-card .loop-name { font-size: 16px; font-weight: 600; }
+.loop-card.physical { border-left: 3px solid var(--state-yellow); }
+.loop-card.physical .loop-name { color: var(--state-yellow); }
+.loop-card.voltage { border-left: 3px solid var(--state-red); }
+.loop-card.voltage .loop-name { color: var(--state-red); }
+.loop-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+.loop-step { background: var(--panel-raise); border: 1px solid var(--edge); border-radius: 5px; padding: 3px 8px; color: var(--ink); }
+.loop-steps i { color: var(--muted); font-style: normal; }
+.loop-note { font-size: 13px; color: var(--muted); }
+.conclusion-bar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: var(--ink);
+  background: var(--panel-raise); border: 1px solid var(--edge); border-radius: var(--radius);
+  padding: 10px 18px;
+}
+.disclaimer { grid-column: 1 / -1; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* ---------- 12. L8 事后 ---------- */
+.l8-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 20px; height: 100%; }
+.restore-col, .change-col { display: flex; flex-direction: column; gap: 12px; min-height: 0; padding: 16px 18px; }
+.restore-col h3, .change-col h3 { margin: 0; font-size: 18px; }
+.time-card {
+  display: flex; align-items: baseline; gap: 12px;
+  background: var(--panel-raise); border: 1px solid var(--edge); border-radius: 6px;
+  padding: 10px 14px;
+}
+.time-card .value { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--state-yellow); white-space: nowrap; }
+.time-card .label { font-size: 14px; color: var(--ink-soft); }
+.restore-note { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+.metric-chips { display: flex; gap: 10px; }
+.metric-chip {
+  flex: 1; text-align: center;
+  background: var(--panel-raise); border: 1px solid var(--edge); border-radius: 6px;
+  padding: 8px 6px;
+}
+.metric-chip .v { font-family: var(--mono); font-size: 15px; color: var(--ink); display: block; }
+.metric-chip .l { font-size: 12px; color: var(--muted); }
+.change-chain { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+.chain-node {
+  background: var(--panel-raise); border: 1px solid var(--edge); border-radius: 6px;
+  padding: 8px 14px; display: flex; align-items: center; gap: 12px;
+  opacity: 0; animation: nodeOn .4s ease-out forwards;
+}
+.chain-node:nth-child(1) { animation-delay: .1s; }
+.chain-node:nth-child(3) { animation-delay: .5s; }
+.chain-node:nth-child(5) { animation-delay: .9s; }
+.chain-node:nth-child(7) { animation-delay: 1.3s; }
+@keyframes nodeOn { from { opacity: 0; border-color: var(--state-blue); } to { opacity: 1; } }
+.chain-node .label { font-family: var(--mono); font-size: 12.5px; color: var(--state-blue); flex: 0 0 84px; }
+.chain-node .text { font-size: 15px; color: var(--ink); font-weight: 600; }
+.chain-node.final { border-color: var(--state-blue); background: var(--blue-soft); }
+.chain-node.final .text { color: var(--state-blue); }
+.chain-link { text-align: center; color: var(--muted); font-size: 13px; line-height: 1; }
+.badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-left: auto; }
+.badge {
+  font-size: 11.5px; font-family: var(--mono); color: var(--ink-soft);
+  border: 1px solid var(--edge); border-radius: 4px; padding: 2px 7px; text-align: center;
+  background: var(--panel);
+}
+
+/* ---------- 13. L9 来源 ---------- */
+.l9-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; height: 100%; }
+.sources-col, .ai-col { padding: 16px 20px; overflow: hidden; }
+.sources-col h3, .ai-col h3 { margin: 0 0 10px; font-size: 17px; }
+.source-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.source-list li { display: flex; gap: 10px; align-items: baseline; font-size: 13.5px; color: var(--ink-soft); }
+.source-list .no { font-family: var(--mono); color: var(--state-blue); flex: 0 0 24px; }
+.source-list .org { color: var(--ink); }
+.source-list .use { color: var(--muted); font-size: 12.5px; }
+.ai-col p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-soft); }
+.ai-col .ai-kicker { font-family: var(--mono); font-size: 12px; color: var(--state-blue); letter-spacing: .2em; margin-bottom: 8px; }
+
+/* ---------- 14. SVG 框图（暗色） ---------- */
+.network-svg .svg-bg { fill: rgba(255, 255, 255, .02); stroke: var(--edge); }
+
+.network-svg .node rect { fill: var(--panel-raise); stroke: var(--edge); }
+.network-svg .node text { fill: var(--ink); font-size: 13px; text-anchor: middle; font-family: var(--font); }
+.network-svg .node .block-sub { fill: var(--muted); font-size: 11px; }
+.network-svg .node.control rect { fill: var(--blue-soft); stroke: rgba(107, 163, 213, .45); }
+.network-svg .node.control circle { fill: var(--state-blue); }
+.network-svg .node.control .screen-line { stroke: rgba(107, 163, 213, .7); stroke-width: 2; }
+.network-svg .node .bolt { fill: none; stroke: var(--state-yellow); stroke-width: 2; }
+.network-svg .node .load-wave { fill: none; stroke: var(--state-gray); stroke-width: 2; }
+
+.network-svg .bus-bar { fill: #2c3f5c; }
+.network-svg .bus-label { fill: var(--muted); font-size: 12px; font-family: var(--font); }
+
+.network-svg .info-link { fill: none; stroke: var(--state-gray); stroke-width: 1.6; stroke-dasharray: 5 4; opacity: .75; }
+.network-svg .info-chip rect { fill: var(--panel-raise); stroke: var(--edge); }
+.network-svg .info-chip text { fill: var(--ink-soft); font-size: 11px; text-anchor: middle; font-family: var(--font); }
+
+.network-svg .grid-line { fill: none; stroke-width: 2.5; transition: stroke .6s ease-out, stroke-width .6s ease-out, opacity .6s ease-out; }
+.network-svg .grid-line.state-normal { stroke: var(--state-green); }
+.network-svg .grid-line.state-increased { stroke: var(--state-yellow); stroke-width: 4; }
+.network-svg .grid-line.state-risk { stroke: var(--state-yellow); stroke-width: 4; stroke-dasharray: 9 6; }
+.network-svg .grid-line.state-out { stroke: var(--state-red); stroke-width: 2.5; stroke-dasharray: 4 6; opacity: .8; }
+.network-svg .grid-line.delivery { stroke-width: 3; }
+
+.network-svg .flow-arrow { fill: none; stroke-width: 2; transition: stroke .6s ease-out, stroke-width .6s ease-out; }
+.network-svg .flow-arrow.state-normal { stroke: var(--state-green); }
+.network-svg .flow-arrow.state-increased { stroke: var(--state-yellow); stroke-width: 3.5; }
+.network-svg .flow-arrow.state-risk { stroke: var(--state-yellow); stroke-width: 3.5; }
+/* HTML hidden 属性对 SVG 元素无效，需显式补偿（否则 Ⓧ 标记与退出箭头常显） */
+.network-svg [hidden] { display: none; }
+
+.network-svg .break-marker circle { fill: var(--panel); stroke: var(--state-red); stroke-width: 2; }
+.network-svg .break-marker path { stroke: var(--state-red); stroke-width: 2.4; }
+.network-svg .break-marker { filter: drop-shadow(0 0 6px rgba(239, 107, 107, .6)); }
+.network-svg .break-marker.pop { animation: breakPop .45s cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes breakPop { from { transform: scale(.6); } to { transform: scale(1); } }
+.network-svg .break-marker { transform-box: fill-box; transform-origin: center; }
+
+.network-svg .line-name { fill: var(--ink-soft); font-size: 11.5px; font-family: var(--font); }
+.network-svg .line-status { font-size: 11.5px; font-family: var(--mono); }
+.network-svg .line-status.st-normal { fill: var(--state-green); }
+.network-svg .line-status.st-increased { fill: var(--state-yellow); }
+.network-svg .line-status.st-risk { fill: var(--state-yellow); }
+.network-svg .line-status.st-out { fill: var(--state-red); }
+
+.network-svg .legend text { fill: var(--muted); font-size: 11px; font-family: var(--font); }
+.network-svg .legend-line { stroke-width: 3; }
+.network-svg .legend-line.green { stroke: var(--state-green); }
+.network-svg .legend-line.yellow { stroke: var(--state-yellow); }
+.network-svg .legend-line.yellow.dashed { stroke-dasharray: 8 5; }
+.network-svg .legend-line.red { stroke: var(--state-red); stroke-dasharray: 4 5; }
+.network-svg .legend-line.info { stroke: var(--state-gray); stroke-dasharray: 5 4; }
+
+/* 框图线路交互（非录屏场景） */
+.network-svg .grid-line[data-line-key] { cursor: pointer; }
+.network-svg .grid-line[data-line-key]:hover, .network-svg .grid-line[data-line-key].selected { stroke-width: 5; filter: drop-shadow(0 0 8px rgba(232, 177, 63, .55)); }
+
+/* 首次进入阶段组：描线生成 */
+.network-svg .grid-line.draw-in { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .8s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* ---------- 15. 线路浮层提示 ---------- */
+#line-tip {
+  position: absolute;
+  z-index: 60;
+  max-width: 320px;
+  background: var(--panel-raise);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--state-yellow);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  pointer-events: none;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+}
+#line-tip b { color: var(--ink); display: block; margin-bottom: 3px; }
+
+/* ---------- 16. 进度条与控制条 ---------- */
+#progress-track {
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 3px; width: 100%;
+  background: rgba(255, 255, 255, .05);
+  z-index: 80;
+}
+#progress-fill { height: 100%; width: 0; background: var(--state-blue); transition: width .3s ease-out; }
+
+#control-bar {
+  position: absolute;
+  right: 16px; bottom: 14px;
+  z-index: 85;
+  display: flex; gap: 6px;
+  opacity: .25;
+  transition: opacity .25s;
+}
+#control-bar:hover, #control-bar:focus-within { opacity: 1; }
+#control-bar button {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+#control-bar button:hover { color: var(--ink); border-color: var(--state-blue); }
+#control-bar.auto-hidden { display: none; }
+
+/* ---------- 17. 加载错误 ---------- */
+#load-error {
+  position: absolute; inset: auto 16px 16px;
+  z-index: 95;
+  background: var(--red-soft);
+  border: 1px solid var(--state-red);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+/* ---------- 18. reduced-motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .slide.slide-in-right, .slide.slide-in-left { animation: none; }
+  .slide.active .rise { animation: none; }
+  .bar-fill { animation: none; transform: none; }
+  .chain-node { animation: none; opacity: 1; }
+  .rm-hit { animation: none; fill: #f6cba2; }
+  .fs-node, .fs-link, .fs-cross, .fs-end { animation: none; opacity: 1; }
+  .network-svg .break-marker.pop { animation: none; }
+  .network-svg .grid-line, .network-svg .flow-arrow { transition: none; }
+  .network-svg .grid-line.draw-in { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+  .l4-side.refresh .fade-swap { animation: none; }
+  #progress-fill { transition: none; }
+}

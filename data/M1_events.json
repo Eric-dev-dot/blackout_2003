@@ -1,0 +1,395 @@
+{
+  "project": "2003年美加大停电交互可视化",
+  "schemaVersion": "m2-mechanism",
+  "factPolicy": "pending事实不得作为已核实精确时间或确定性设备顺序发布；拓扑、箭头粗细、电压支撑与系统频率均为定性机制示意，不含实测数值或曲线。",
+  "background": {
+    "layers": [
+      {
+        "tag": "制度层",
+        "claim": "电力行业重组：发电、输电、配电解绑",
+        "detail": "传统垂直一体化公用事业被拆分，形成 ISO/RTO 独立运行机构；电网所有权与运行调度分离（S1 第 2 章）。",
+        "source": "S1"
+      },
+      {
+        "tag": "数据层",
+        "claim": "高峰负荷增长 26%，输电容量几乎未增",
+        "detail": "1986–2002 年美国高峰负荷增长 26%、发电容量增长 22%，输电容量几乎没有扩张；电网被推向更接近安全极限运行（S1 第 2 章）。",
+        "bars": [
+          { "label": "高峰负荷（1986–2002）", "value": 26, "display": "+26%", "tone": "yellow" },
+          { "label": "输电容量", "value": 0, "display": "≈ 0%", "tone": "gray" }
+        ],
+        "source": "S1"
+      },
+      {
+        "tag": "公司层",
+        "claim": "FirstEnergy：树障管理欠账，报警系统当天失效",
+        "detail": "调查报告认定：FE 未能通过植被管理程序维持设备额定值；报警与事件处理程序异常削弱运行人员态势感知（S1 原因章节）。",
+        "foreshadows": [
+          { "text": "伏笔① 报警程序失效 → 阶段 2" },
+          { "text": "伏笔② 树障跳闸 → 阶段 3" }
+        ],
+        "source": "S1"
+      }
+    ]
+  },
+  "aftermath": {
+    "restore": {
+      "title": "恢复",
+      "cards": [
+        { "label": "美国部分地区", "value": "4 天", "detail": "部分区域迟迟未恢复供电" },
+        { "label": "安大略部分地区", "value": "滚动停电 > 1 周", "detail": "超过一周才全部恢复供电" }
+      ],
+      "note": "恢复供电 ≠ 恢复正常运行能力；各地恢复节奏不同",
+      "metrics": [
+        { "label": "美国经济损失（估计）", "value": "40–100 亿美元" },
+        { "label": "加拿大 8 月 GDP", "value": "−0.7%" },
+        { "label": "净损失工时", "value": "1890 万小时" }
+      ]
+    },
+    "change": {
+      "title": "改变",
+      "nodes": [
+        { "label": "次日", "text": "美加联合调查组成立" },
+        { "label": "2004 年 4 月", "text": "最终报告：46 条建议", "badges": ["标准强制化", "树障净距", "无功电压", "同步记录仪"] },
+        { "label": "2005 年", "text": "《能源政策法》§1211" },
+        { "label": "此后", "text": "可靠性标准：自愿 → 强制" }
+      ]
+    },
+    "sources": ["S1", "S7"]
+  },
+  "processes": {
+    "physical": {
+      "name": "电网物理过程",
+      "steps": [
+        { "title": "高温背景与树障风险", "detail": "导线热极限下降、弧垂增大，对树距离缩短；系统仍满足 N-1，但裕度收窄。", "stage": 1 },
+        { "title": "关键线路退出", "detail": "Harding–Chamberlin 345 kV 因树障接地故障被继电保护跳开。", "stage": 3 },
+        { "title": "潮流重新分配", "detail": "潮流按基尔霍夫定律沿并联路径强制转移，幸存线路负担跳一档。", "stage": 4 },
+        { "title": "过载 → 再跳闸（回路①）", "detail": "过载线路发热下垂、相继跳闸，每一环都是上一环的产物。", "stage": 5 },
+        { "title": "无功恶化与机组跳闸（回路②）", "detail": "重载线路 I²X 无功损耗激增，电压下降，机组被低电压保护切除。", "stage": 5 },
+        { "title": "系统解列", "detail": "主干线与联络线大量退出，互联电网分割为若干孤岛。", "stage": 6 },
+        { "title": "跨区域大停电", "detail": "约 5000 万人受影响、约 61,800 MW 负荷切除（估计口径）。", "stage": 6 }
+      ]
+    },
+    "monitoring": {
+      "name": "运行监视过程",
+      "steps": [
+        { "title": "报警与事件处理程序故障", "detail": "EMS 告警链路中断（约 14:14 EDT，待正文核对）。", "stage": 2 },
+        { "title": "关键告警未及时呈现", "detail": "线路退出与潮流变化的画面没有到达调度员。", "stage": 2 },
+        { "title": "态势感知下降", "detail": "察觉-理解-预判三层失效，风险升级无人察觉。", "stage": 4 },
+        { "title": "干预窗口错过", "detail": "减载、倒闸、切机等正规处置手段未被使用。", "stage": 5 },
+        { "title": "处置能力下降", "detail": "监视与协调不足使局部故障未被及时遏制。", "stage": 6 }
+      ]
+    }
+  },
+  "mechanismRecap": {
+    "scales": [
+      {
+        "name": "有功 ↔ 频率",
+        "scope": "全局天平 · 全网一个频率",
+        "mechanism": "发电功率与用电功率每一瞬间都必须平衡；失衡由全网旋转转子的动能缓冲，表现为频率下降或上升。",
+        "inEvent": "主干线大量退出后电网解列成孤岛，岛内发电小于负荷，频率下跌，触发低频减载与机组保护。"
+      },
+      {
+        "name": "无功 ↔ 电压",
+        "scope": "局部天平 · 电压处处不同，就地平衡",
+        "mechanism": "高压电网的电压降几乎由无功决定；无功不能远距离输送，每个负荷中心必须就地备足。",
+        "inEvent": "Cleveland 附近线路过载后无功损耗激增，电压支撑被抽走，机组相继被低电压保护切除。"
+      }
+    ],
+    "loops": [
+      {
+        "name": "回路① 过载级联（有功/潮流侧）",
+        "tone": "physical",
+        "steps": ["线路退出", "潮流转移", "相邻线路过载", "发热下垂/树障 → 再跳闸"],
+        "note": "每一环都是上一环的产物，回路自身就是放大器。"
+      },
+      {
+        "name": "回路② 无功电压（电压侧）",
+        "tone": "voltage",
+        "steps": ["重载线路 I²X 损耗激增", "负荷中心电压下降", "机组被低电压保护切除", "无功支撑更缺"],
+        "note": "与回路①相互喂料，共同加速级联。"
+      }
+    ],
+    "conclusion": "物理故障过程与监视、协调不足并行发展、最终汇聚：一条线路的退出，最终变成了一整个互联电网的教训。",
+    "disclaimer": "两条天平与两条回路均为机制解释性示意，不含实测电压/频率曲线或具体数值。"
+  },
+  "events": [
+    {
+      "id": "normal_background",
+      "order": 1,
+      "title": "高温运行背景",
+      "screenText": "2003 年 8 月 14 日，俄亥俄地区异常炎热：空调负荷推高线路负载，导线受热下垂，离下方树木越来越近。系统仍在正常运行，但安全裕度正在被悄悄吃掉。",
+      "narrationPoints": [
+        "高温使线路载流能力（热极限）下降、弧垂增大，对树距离缩短。",
+        "系统此刻仍满足 N-1 安全准则，但裕度正在收窄。",
+        "高温只是背景和放大条件，不能单独解释大停电。"
+      ],
+      "timelineLabel": "正常运行",
+      "physicalState": "线路正常，潮流方向以示意箭头表示",
+      "monitoringState": "告警和事件处理显示正常占位状态",
+      "voltageState": "normal",
+      "frequencyState": "normal",
+      "lineStates": {
+        "harding_chamberlin": "normal",
+        "cleveland_1": "normal",
+        "cleveland_2": "normal",
+        "cleveland_3": "normal"
+      },
+      "affectedLevel": 0,
+      "mechanismNotes": [
+        { "fault": "导线离树木越来越近", "concept": "弧垂与热极限", "text": "载流发热（I²R）使导线温度升高、金属膨胀，弧垂增大；导线允许载流量（热极限）随之下降。高温与高负荷把对树安全裕度双重压缩。" },
+        { "fault": "系统仍在正常运行", "concept": "N-1 安全准则", "text": "任一元件退出后其余元件不过载、电压频率仍合格，系统才算安全。当前满足 N-1，但裕度正在收窄。" }
+      ],
+      "sources": ["S1", "S3"],
+      "factStatus": "pending",
+      "visualNotes": [
+        "发电侧、线路和 Cleveland 负荷中心正常显示",
+        "显示简化拓扑 / 机制示意",
+        "不显示无来源温度曲线或精确负荷率"
+      ],
+      "whyItMatters": "先建立物理前提：线路热极限和弧垂是后续一切跳闸的起点，高温只是放大条件。",
+      "boundaryNote": "高温仅作运行背景；不显示无来源温度曲线或负荷率；N-1 为课程概念解释。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "正常状态；潮流方向以示意箭头表示。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "正常状态；潮流方向以示意箭头表示。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "正常状态；潮流方向以示意箭头表示。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "正常状态；潮流方向以示意箭头表示。" }
+      },
+      "metrics": []
+    },
+    {
+      "id": "monitoring_failure",
+      "order": 2,
+      "title": "告警信息未及时呈现",
+      "screenText": "下午两点多，FirstEnergy 控制中心的报警与事件处理程序出现异常，关键告警没有再正常呈现——事故的第一道防线在无人察觉的情况下失效了。",
+      "narrationPoints": [
+        "EMS 的告警与事件处理是运行人员“看系统”的眼睛。",
+        "监视链路失效削弱态势感知，属于运行监视过程。",
+        "它不改变任何线路的物理状态，不是线路跳闸的直接原因。"
+      ],
+      "timelineLabel": "监视异常",
+      "physicalState": "拓扑暂不因该画面动作直接改变",
+      "quietNote": "线路无物理变化 · 关键告警未呈现",
+      "monitoringState": "关键告警未及时呈现",
+      "voltageState": "normal",
+      "frequencyState": "normal",
+      "lineStates": {
+        "harding_chamberlin": "normal",
+        "cleveland_1": "normal",
+        "cleveland_2": "normal",
+        "cleveland_3": "normal"
+      },
+      "affectedLevel": 0,
+      "mechanismNotes": [
+        { "fault": "运行人员看不到线路状态变化", "concept": "EMS / SCADA 告警链路", "text": "遥测遥信要经数据处理与告警过滤，才能变成调度员面前的画面。报警与事件处理程序故障使链路中断：电网本身没变，“看到电网”的能力变了。" },
+        { "fault": "风险升级无人察觉", "concept": "态势感知", "text": "态势感知分察觉、理解、预判三层；告警失效摧毁“察觉”层，理解与预判随之失去依据。这是监视过程的失效，不是电气故障。" }
+      ],
+      "sources": ["S1", "S3"],
+      "factStatus": "pending",
+      "visualNotes": [
+        "监视面板变灰或黄色",
+        "显示信息未及时呈现",
+        "不得画成线路立即跳闸"
+      ],
+      "whyItMatters": "解释为什么后续的线路退出和风险升级没有及时被人发现与处置。",
+      "boundaryNote": "报警故障时间以“下午两点多”示意（对应约 14:14 EDT，待正文核对）；监视异常不画成线路跳闸。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "正常状态；拓扑暂不因监视异常直接改变。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "正常状态；拓扑暂不因监视异常直接改变。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "正常状态；拓扑暂不因监视异常直接改变。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "正常状态；拓扑暂不因监视异常直接改变。" }
+      },
+      "metrics": []
+    },
+    {
+      "id": "key_line_outage",
+      "order": 3,
+      "title": "关键线路退出",
+      "screenText": "运行过程中，Harding–Chamberlin 345 千伏线路因接触树木而退出运行。它不是大停电的唯一原因，而是第一张倒下的多米诺骨牌。",
+      "narrationPoints": [
+        "导线下垂接触树木形成接地故障，继电保护自动跳开两端断路器。",
+        "一条并联支路退出，改变了网络的电气结构。",
+        "不能说成整起停电的唯一原因。"
+      ],
+      "timelineLabel": "关键线路退出",
+      "physicalState": "Harding–Chamberlin 线路退出",
+      "monitoringState": "关键状态仍未及时呈现的示意状态",
+      "voltageState": "normal",
+      "frequencyState": "normal",
+      "lineStates": {
+        "harding_chamberlin": "out",
+        "cleveland_1": "normal",
+        "cleveland_2": "normal",
+        "cleveland_3": "normal"
+      },
+      "affectedLevel": 1,
+      "mechanismNotes": [
+        { "fault": "Harding–Chamberlin 线路断开", "concept": "继电保护与断路器", "text": "树障形成接地故障，保护检测到故障电流后命令断路器分闸，把故障元件从系统中隔离——跳闸是保护装置的自动安全动作。" },
+        { "fault": "网络电气结构改变", "concept": "节点导纳矩阵与并联支路", "text": "每条线路对应导纳矩阵中的一条支路；线路退出即支路导纳归零，全网潮流按新矩阵重新分布——潮流转移由此埋下伏笔。" }
+      ],
+      "sources": ["S1", "S3"],
+      "factStatus": "pending",
+      "visualNotes": [
+        "对应线路由绿色变红并断开或淡出",
+        "不显示未核实的精确钟点",
+        "不称为停电唯一原因"
+      ],
+      "whyItMatters": "把跳闸还原为“保护动作隔离故障”的自动过程，为潮流重分配提供电路起点。",
+      "boundaryNote": "不显示未经核实的精确事件时刻，也不称为停电唯一原因。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "退出状态；树障故障被继电保护隔离。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "正常状态；Harding–Chamberlin 已退出。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "正常状态；Harding–Chamberlin 已退出。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "正常状态；Harding–Chamberlin 已退出。" }
+      },
+      "metrics": []
+    },
+    {
+      "id": "flow_redistribution",
+      "order": 4,
+      "title": "潮流重新分配",
+      "screenText": "潮流遵循基尔霍夫定律，沿并联路径自动重新分配——它不会消失，只会转移。通往 Cleveland 的其余三条 345 千伏线路被迫承担更多负荷。",
+      "narrationPoints": [
+        "潮流由网络阻抗结构自动决定，转移在毫秒到秒级完成，无需调度指派。",
+        "教学近似：四回并联线路各承担约四分之一，断开一回后其余各承担约三分之一——每条幸存线路的负担跳一档。",
+        "按 N-1 准则系统本应回到安全状态，但此刻正在滑向下一重过载。",
+        "过载电流使导线发热加剧，弧垂进一步增大。"
+      ],
+      "timelineLabel": "潮流转移",
+      "physicalState": "其他 Cleveland 方向线路显示相对潮流增加",
+      "monitoringState": "风险信息仍未完整呈现的示意状态",
+      "voltageState": "declining",
+      "frequencyState": "normal",
+      "lineStates": {
+        "harding_chamberlin": "out",
+        "cleveland_1": "increased",
+        "cleveland_2": "increased",
+        "cleveland_3": "increased"
+      },
+      "affectedLevel": 1,
+      "mechanismNotes": [
+        { "fault": "其余三条线路潮流自动增大", "concept": "基尔霍夫定律与潮流自然分配", "text": "发电注入与负荷汲取都没变，功率必须守恒；直流潮流近似下潮流按电抗反比分配，转移在毫秒级自动完成，无需调度指令。教学近似：四回线各带约 1/4，断一回后其余各带约 1/3。" },
+        { "fault": "系统失去抗扰动能力", "concept": "N-1 被突破", "text": "再失去任意一条线路都会造成越限，系统从“满足 N-1”滑入 N-1-1 无裕度的高风险区。" },
+        { "fault": "线路更热、垂得更低", "concept": "I²R 发热与热平衡", "text": "损耗随电流平方增长，导线温度与弧垂进一步增大——再次碰树跳闸的概率上升，为级联回路持续提供燃料。" }
+      ],
+      "sources": ["S1", "S3"],
+      "factStatus": "pending",
+      "visualNotes": [
+        "其他线路箭头变粗",
+        "标注相对潮流变化示意",
+        "不加入未经来源支持的 MW、百分比或过载率"
+      ],
+      "whyItMatters": "解释级联的核心物理：潮流不消失、只转移，负担转移让风险沿线路网络扩散。",
+      "boundaryNote": "箭头和线宽只表示相对变化；“各带约三分之一”为线路参数相同的教学近似，不代表实测值。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "退出状态；潮流已转移至其余并联线路。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "负荷增加状态；承接转移潮流（相对示意）。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "负荷增加状态；承接转移潮流（相对示意）。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "负荷增加状态；承接转移潮流（相对示意）。" }
+      },
+      "metrics": []
+    },
+    {
+      "id": "cascade_expansion",
+      "order": 5,
+      "title": "局部异常扩大为级联",
+      "screenText": "过载的线路相继跳闸，系统无功支撑恶化、电压下降，机组又因低电压相继退出——跳闸引发转移，转移制造新的过载，回路自己变成了放大器。",
+      "narrationPoints": [
+        "物理回路①：跳闸 → 潮流转移 → 相邻线路过载 → 再跳闸，逐级自我加速。",
+        "物理回路②：重载线路的无功损耗随电流平方增长，负荷中心电压下降，机组被低电压保护切除，无功支撑更缺。",
+        "监视链路仍然失效，减载、倒闸、切机的干预窗口一个个错过。"
+      ],
+      "timelineLabel": "级联扩大",
+      "physicalState": "更多线路和机组退出的汇总示意",
+      "monitoringState": "态势感知和处置能力下降的汇总示意",
+      "voltageState": "low",
+      "frequencyState": "unstable",
+      "lineStates": {
+        "harding_chamberlin": "out",
+        "cleveland_1": "out",
+        "cleveland_2": "risk",
+        "cleveland_3": "risk"
+      },
+      "affectedLevel": 2,
+      "mechanismNotes": [
+        { "fault": "线路一条接一条跳闸", "concept": "过载级联回路①", "text": "每次退出都把潮流压到幸存线路上：跳闸→转移→过载→再跳闸。每一环都是上一环的产物，回路自身就是放大器。" },
+        { "fault": "电压跌落、机组相继跳闸", "concept": "无功平衡与电压稳定（I²X）", "text": "重载线路消耗的无功随电流平方增长：受端无功不足→电压下降→电动机类负荷电流增大→无功更缺；机组因低电压或励磁受限被切除，支撑进一步瓦解（回路②）。" },
+        { "fault": "始终没有人干预", "concept": "预防控制与紧急控制", "text": "减载、倒闸、切机是打断级联回路的正规手段；态势感知缺失使每个干预窗口都被错过——监视失效放大了物理失效。" }
+      ],
+      "sources": ["S1", "S3"],
+      "factStatus": "pending",
+      "visualNotes": [
+        "只显示已核实设备；否则使用汇总动画",
+        "多条线路相继退出（汇总示意），状态词同步更新",
+        "电压支撑状态行转为明显偏低；频率行提示波动风险（均为定性示意）"
+      ],
+      "whyItMatters": "级联不是一次故障，而是一个自我加速的反馈回路；电压/无功是它从局部走向跨区域的电气推手。",
+      "boundaryNote": "未核实的设备顺序以汇总状态表达；电压/频率为定性机制示意，无实测曲线。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "退出状态；级联过程汇总示意。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "退出状态；级联过程汇总示意。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "风险升高状态；级联过程汇总示意。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "风险升高状态；级联过程汇总示意。" }
+      },
+      "metrics": []
+    },
+    {
+      "id": "impact_summary",
+      "order": 6,
+      "title": "跨区域停电",
+      "screenText": "下午四点之后，级联越出俄亥俄：约 5000 万人失去供电，约 61,800 MW 负荷被切除。物理故障过程，与监视、协调不足共同作用，酿成跨区域大停电。",
+      "narrationPoints": [
+        "主干线大量退出后，互联电网被解列成多个孤岛。",
+        "孤岛内发电小于负荷，频率下跌，触发低频减载与机组保护——有功-频率天平失稳。",
+        "电压崩溃（局部、无功侧）先行，频率失稳（全局、有功侧）发生在解列之后，两条天平先后翻倒。",
+        "结论：多因素共同作用，不可归结为单一设备或单一人员。"
+      ],
+      "timelineLabel": "影响与总结",
+      "physicalState": "跨区域影响范围扩大并进入停电结果状态",
+      "monitoringState": "以总结面板显示监视和协调问题的作用",
+      "voltageState": "collapsed",
+      "frequencyState": "islanded",
+      "lineStates": {
+        "harding_chamberlin": "out",
+        "cleveland_1": "out",
+        "cleveland_2": "out",
+        "cleveland_3": "out"
+      },
+      "affectedLevel": 3,
+      "mechanismNotes": [
+        { "fault": "互联电网被“撕”成几块", "concept": "系统解列", "text": "联络线过载、发电机间功角摇摆加大，保护相继动作，互联电网分割为若干孤岛——全局事件由此开始。" },
+        { "fault": "孤岛内频率下跌", "concept": "有功-频率与低频减载", "text": "孤岛内原动机功率小于负荷电磁功率，转子减速释放动能、频率下降；低频减载按频率分层自动切负荷，力求保住部分电网。" },
+        { "fault": "先电压崩溃、后频率失稳", "concept": "电压稳定与频率稳定", "text": "电压是局部问题、无功就地平衡，崩溃先来；频率是全局问题、有功失衡在解列后才致命——“无功定电压、有功定频率”的现实注脚。" }
+      ],
+      "sources": ["S1", "S2", "S4", "S5"],
+      "factStatus": "estimated + pending",
+      "visualNotes": [
+        "四条线路全部退出（Ⓧ 断开标记），负荷通道失电",
+        "影响数字见第二页影响规模卡",
+        "机理回顾见第二页；恢复时间不纳入首版主线"
+      ],
+      "whyItMatters": "把电网物理过程和运行监视过程汇聚为整体解释，并用两条“天平”回顾全部机理。",
+      "boundaryNote": "影响数字保留约/估计口径；解列与频率状态为机制示意；各地恢复过程不同，恢复时长不入主线。",
+      "lineNotes": {
+        "harding_chamberlin": { "label": "Harding–Chamberlin 345 kV", "detail": "退出状态；跨区域停电结果状态。" },
+        "cleveland_1": { "label": "Cleveland 方向线路 L1", "detail": "退出状态；跨区域停电结果状态。" },
+        "cleveland_2": { "label": "Cleveland 方向线路 L2", "detail": "退出状态；跨区域停电结果状态。" },
+        "cleveland_3": { "label": "Cleveland 方向线路 L3", "detail": "退出状态；跨区域停电结果状态。" }
+      },
+      "metrics": [
+        {
+          "label": "受影响人口",
+          "value": "约 5000 万",
+          "qualifier": "estimated",
+          "visibleAt": ["impact_summary"]
+        },
+        {
+          "label": "切除负荷",
+          "value": "约 61,800 MW",
+          "qualifier": "estimated",
+          "visibleAt": ["impact_summary"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "slides-v1",
+  "cover": {
+    "title": "一条线路退出，为什么会扩大成跨区域停电？",
+    "subtitle": "2003-08-14 · 美加大停电 · 六阶段机理演示"
+  },
+  "sourcesPage": {
+    "sources": [
+      { "no": "S1", "org": "美加联合调查工作组（DOE / NERC）", "title": "Final Report on the August 14, 2003 Blackout", "use": "事件全貌、原因、背景与事后、46 条建议" },
+      { "no": "S2", "org": "FERC", "title": "Final Report Chapters 1–3", "use": "影响范围与事件概览" },
+      { "no": "S3", "org": "FERC", "title": "Final Blackout Report Chapter 5", "use": "事件演化时间线" },
+      { "no": "S4", "org": "IESO（安大略独立电力系统运营商）", "title": "Looking Back at Blackout 2003", "use": "安大略恢复过程" },
+      { "no": "S5", "org": "NYISO（纽约独立电力系统运营商）", "title": "Blackout August 14, 2003 Final Report", "use": "纽约系统恢复过程" },
+      { "no": "S6", "org": "LBNL / DOE", "title": "Causes of the August 14th Blackout: Interim Report", "use": "独立技术分析与交叉核对" },
+      { "no": "S7", "org": "美国国会（govinfo）", "title": "Energy Policy Act of 2005, PL 109-58 §1211", "use": "事后改革：可靠性标准强制化的法律依据" }
+    ],
+    "aiNote": "本作品的资料检索与来源整理、交互网页与框图可视化（HTML/CSS/JS）编写、机理注解与录屏文稿起草，均借助 AI 编程助手（ZCode）完成；官方报告正文的检索定位与页码核对亦由 AI 辅助完成。页面配音与背景音乐由作者后期制作合成。页面中的关键事实、时间口径与影响数字由人工对照上述官方来源核实；未经报告正文核对的内容（如首条线路退出的精确时刻、级联设备顺序）不写入确定性时间轴，以保守表述呈现。"
+  },
+  "pages": [
+    {
+      "id": "cover", "layout": "L1",
+      "narration": "", "fallbackDuration": 3000
+    },
+    {
+      "id": "intro", "layout": "L2",
+      "header": { "kicker": "INTRODUCTION", "title": "2003 年 8 月 14 日 · 美加大停电" },
+      "narration": "2003 年 8 月 14 日下午，美国东北部和加拿大安大略大停电，约 5000 万人受影响。一条线路退出，为何演变成跨区域灾难？六阶段框图讲清机理。",
+      "fallbackDuration": 14000
+    },
+    {
+      "id": "background", "layout": "L3",
+      "header": { "kicker": "BACKGROUND", "title": "背景 · 为什么电网这么脆弱" },
+      "narration": "为什么电网这么脆弱？放松管制后发输配电解绑；高峰负荷增长 26% 的同时，输电容量几乎停滞，电网被推向更接近安全极限。运营商 FirstEnergy 的报警隐患与树障欠账，正是后面两幕的伏笔。",
+      "tts": "为什么电网这么脆弱？放松管制后发输配电解绑；高峰负荷增长百分之二十六的同时，输电容量几乎停滞，电网被推向更接近安全极限。运营商第一能源的报警隐患与树障欠账，正是后面两幕的伏笔。",
+      "fallbackDuration": 20000
+    },
+    {
+      "id": "stage-1", "layout": "L4", "group": "stages", "stageIndex": 0,
+      "narration": "第一阶段，高温背景。空调负荷推高线路负载，导线发热、弧垂增大，离树越来越近，N-1 裕度收窄。",
+      "tts": "第一阶段，高温背景。空调负荷推高线路负载，导线发热、弧垂增大，离树越来越近，N 减一裕度收窄。",
+      "fallbackDuration": 12000
+    },
+    {
+      "id": "stage-2", "layout": "L4", "group": "stages", "stageIndex": 1,
+      "narration": "第二阶段，监视失效。注意：线路没有任何变化——报警程序故障、关键告警未呈现，运行人员失去态势感知。这是监视失效，不是跳闸的物理原因。",
+      "fallbackDuration": 16000
+    },
+    {
+      "id": "stage-3", "layout": "L4", "group": "stages", "stageIndex": 2,
+      "narration": "第三阶段，Harding–Chamberlin 345 千伏线路碰树接地，保护自动跳开——不是唯一原因，而是第一张倒下的多米诺骨牌。",
+      "tts": "第三阶段，哈定钱伯林 345 千伏线路碰树接地，保护自动跳开——不是唯一原因，而是第一张倒下的多米诺骨牌。",
+      "fallbackDuration": 14000
+    },
+    {
+      "id": "stage-4", "layout": "L4", "group": "stages", "stageIndex": 3,
+      "narration": "第四阶段，物理核心。基尔霍夫定律决定潮流：功率必须守恒，断开线路的份额自动压向并联线路——四回各担四分之一，断一回，其余各担三分之一。N-1 就此突破，导线发热下垂，电压开始下降。",
+      "tts": "第四阶段，物理核心。基尔霍夫定律决定潮流：功率必须守恒，断开线路的份额自动压向并联线路——四回各担四分之一，断一回，其余各担三分之一。N 减一就此突破，导线发热下垂，电压开始下降。",
+      "fallbackDuration": 20000
+    },
+    {
+      "id": "stage-5", "layout": "L4", "group": "stages", "stageIndex": 4,
+      "narration": "第五阶段，级联开始。回路一：跳闸让潮流转移，转移制造新过载，再引发跳闸；回路二：无功损耗随电流平方增长，电压下降、机组切除、无功更缺。两条回路相互喂料，而监视失效，窗口尽失。",
+      "fallbackDuration": 20000
+    },
+    {
+      "id": "stage-6", "layout": "L4", "group": "stages", "stageIndex": 5,
+      "narration": "第六阶段，级联越出俄亥俄。主干线大量退出，电网解列成孤岛，频率下跌触发低频减载。电压崩溃在先、频率失稳在后——两条天平先后翻倒。",
+      "fallbackDuration": 16000
+    },
+    {
+      "id": "impact", "layout": "L5",
+      "header": { "kicker": "IMPACT", "title": "影响规模 · 官方估计口径" },
+      "narration": "结果就是这场跨区域大停电：约 5000 万人受影响，约 61,800 兆瓦负荷被切除，数字保留官方估计口径。",
+      "tts": "结果就是这场跨区域大停电：约五千万 人受影响，约六万一千八百兆瓦负荷被切除，数字保留官方估计口径。",
+      "fallbackDuration": 11000
+    },
+    {
+      "id": "processes", "layout": "L6",
+      "header": { "kicker": "TWO PROCESSES", "title": "两条过程 · 并行发展，相互喂料" },
+      "narration": "左边物理过程制造故障，右边监视过程错过拦截；并行发展、相互喂料，汇聚成大停电。",
+      "fallbackDuration": 10000
+    },
+    {
+      "id": "recap", "layout": "L7",
+      "header": { "kicker": "MECHANISM RECAP", "title": "机理回顾 · 两条天平与两条回路" },
+      "narration": "回顾机理：有功定频率，全局天平；无功定电压，局部天平。两条正反馈回路，就是天平被打破的方式。",
+      "fallbackDuration": 12000
+    },
+    {
+      "id": "aftermath", "layout": "L8",
+      "header": { "kicker": "AFTERMATH", "title": "事后 · 恢复与改变" },
+      "narration": "事故没有到此为止：部分地区 4 天未恢复供电，安大略滚动停电超过一周。次日美加联合调查组成立，46 条建议最终推动 2005 年《能源政策法》——可靠性标准由自愿遵守变为强制执行。",
+      "tts": "事故没有到此为止：部分地区四天未恢复供电，安大略滚动停电超过一周。次日美加联合调查组成立，四十六条建议最终推动二零零五年《能源政策法》——可靠性标准由自愿遵守变为强制执行。",
+      "fallbackDuration": 18000
+    },
+    {
+      "id": "sources", "layout": "L9",
+      "header": { "kicker": "SOURCES & AI", "title": "资料来源与 AI 使用说明" },
+      "narration": "主要资料来源与 AI 工具使用说明——全部事实以美加联合调查最终报告为准。",
+      "fallbackDuration": 9000
+    }
+  ]
+}
