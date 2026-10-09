@@ -4,7 +4,7 @@
 
 ## 在线演示
 
-GitHub Pages 部署后此链接生效：`https://<用户名>.github.io/<仓库名>/`
+GitHub Pages 部署后此链接生效：`https://eric-dev-dot.github.io/blackout_2003/`
 
 ## 本地打开
 
